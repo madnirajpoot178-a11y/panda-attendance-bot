@@ -23,6 +23,10 @@ client = gspread.authorize(CREDS)
 sheet = client.open("Panda Attendence Sheet").sheet1
 
 
+# Store user data in memory
+user_sessions = {}
+
+
 def save_attendance(username, action, time_now, date_now):
     sheet.append_row([
         date_now,
@@ -30,3 +34,14 @@ def save_attendance(username, action, time_now, date_now):
         action,
         time_now
     ])
+
+
+def get_user_session(username):
+    if username not in user_sessions:
+        user_sessions[username] = {
+            "start_work": None,
+            "break_start": None,
+            "total_break_minutes": 0
+        }
+
+    return user_sessions[username]
