@@ -1,38 +1,38 @@
-from telegram import ReplyKeyboardMarkup, Update
-from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
-import os
+import gspread
+from google.oauth2.service_account import Credentials
+from datetime import datetime
 
-MENU = [
-    ["🟢 Start Work", "🚬 SMK Break"],
-    ["🚻 WC Break", "🍽 Lunch Break"],
-    ["🍛 Dinner Break", "🔙 Back To Work"],
-    ["🔴 Off Work", "📊 My Status"]
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
 ]
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = ReplyKeyboardMarkup(MENU, resize_keyboard=True)
-    await update.message.reply_text(
-        "Welcome to Panda Attendance System",
-        reply_markup=keyboard
-    )
+CREDS = Credentials.from_service_account_file(
+    "vocal-affinity-500511-m8-a1b6e071f727.json",
+    scopes=SCOPES
+)
 
-async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user.username or update.effective_user.first_name
-    text = update.message.text
+client = gspread.authorize(CREDS)
+sheet = client.open("Panda Attendance").sheet1
 
-    await update.message.reply_text(
-        f"✅ @{user} clicked: {text}"
-    )
+def save_attendance(username, action):
+    now = datetime.now()
 
-def main():
-    token = os.getenv("BOT_TOKEN")
+    sheet.append_row([
+        now.strftime("%Y-%m-%d"),
+        username,
+        action,
+        now.strftime("%H:%M:%S")
+    ])
 
-    app = Application.builder().token(token).build()
+def get_today_start(username):
+    records = sheet.get_all_values()
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, buttons))
+    today = datetime.now().strftime("%Y-%m-%d")
 
-    app.run_polling()
+    for row in records:
+        if len(row) >= 4:
+            if row[0] == today and row[1] == username and row[2] == "🟢 Start Work":
+                return row[3]
 
-if __name__ == "__main__":
-    main()
+    return None
