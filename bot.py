@@ -1,38 +1,57 @@
-import gspread
-from google.oauth2.service_account import Credentials
-from datetime import datetime
+from telegram import ReplyKeyboardMarkup, Update
+from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
+from attendance import save_attendance
+
+from datetime import datetime
+import os
+
+MENU = [
+    ["🟢 Start Work", "🚬 SMK Break"],
+    ["🚻 WC Break", "🍽 Lunch Break"],
+    ["🍛 Dinner Break", "🔙 Back To Work"],
+    ["🔴 Off Work", "📊 My Status"]
 ]
 
-CREDS = Credentials.from_service_account_file(
-    "vocal-affinity-500511-m8-a1b6e071f727.json",
-    scopes=SCOPES
-)
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = ReplyKeyboardMarkup(MENU, resize_keyboard=True)
 
-client = gspread.authorize(CREDS)
-sheet = client.open("Panda Attendance").sheet1
+    await update.message.reply_text(
+        "Welcome to Panda Attendance System",
+        reply_markup=keyboard
+    )
 
-def save_attendance(username, action):
+async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    user = update.effective_user.username or update.effective_user.first_name
+    action = update.message.text
+
     now = datetime.now()
 
-    sheet.append_row([
-        now.strftime("%Y-%m-%d"),
-        username,
+    save_attendance(
+        user,
         action,
-        now.strftime("%H:%M:%S")
-    ])
+        now.strftime("%H:%M:%S"),
+        now.strftime("%Y-%m-%d")
+    )
 
-def get_today_start(username):
-    records = sheet.get_all_values()
+    await update.message.reply_text(
+        f"✅ @{user} clicked: {action}"
+    )
 
-    today = datetime.now().strftime("%Y-%m-%d")
+def main():
 
-    for row in records:
-        if len(row) >= 4:
-            if row[0] == today and row[1] == username and row[2] == "🟢 Start Work":
-                return row[3]
+    token = os.getenv("BOT_TOKEN")
 
-    return None
+    app = Application.builder().token(token).build()
+
+    app.add_handler(CommandHandler("start", start))
+
+    app.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, buttons)
+    )
+
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()
