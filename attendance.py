@@ -1,4 +1,7 @@
+import os
+import json
 import gspread
+
 from google.oauth2.service_account import Credentials
 
 SCOPES = [
@@ -6,14 +9,17 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-CREDS = Credentials.from_service_account_file(
-    "vocal-affinity-500511-m8-a1b6e071f727.json",
+# Read credentials from Railway Variable
+google_creds = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
+
+CREDS = Credentials.from_service_account_info(
+    google_creds,
     scopes=SCOPES
 )
 
 client = gspread.authorize(CREDS)
 
-# IMPORTANT: This must match your Google Sheet name exactly
+# Your Google Sheet Name
 sheet = client.open("Panda Attendance Sheet").sheet1
 
 
