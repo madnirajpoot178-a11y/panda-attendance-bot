@@ -21,9 +21,14 @@ client = gspread.authorize(CREDS)
 sheet = client.open("Panda Attendence Sheet").sheet1
 
 
-def add_record(date_now, username, action, time_now,
-               break_type="", minutes=""):
-
+def add_record(
+    date_now,
+    username,
+    action,
+    time_now,
+    break_type="",
+    minutes=""
+):
     sheet.append_row([
         date_now,
         username,
@@ -75,6 +80,29 @@ def get_last_open_break(username, date_now):
     return break_type
 
 
+def get_last_open_break_info(username, date_now):
+
+    records = get_user_today_records(
+        username,
+        date_now
+    )
+
+    break_type = None
+    break_start_time = None
+
+    for row in records:
+
+        if row["Action"] == "Break Start":
+            break_type = row["Break Type"]
+            break_start_time = row["Time"]
+
+        elif row["Action"] == "Break End":
+            break_type = None
+            break_start_time = None
+
+    return break_type, break_start_time
+
+
 def get_start_work_time(username, date_now):
 
     records = get_user_today_records(
@@ -111,7 +139,7 @@ def get_break_totals(username, date_now):
         except:
             minutes = 0
 
-        break_type = row["Break Type"]
+        break_type = str(row["Break Type"])
 
         if break_type in ["SMK", "WC"]:
             smk_wc += minutes
