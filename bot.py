@@ -1,9 +1,10 @@
 from telegram import ReplyKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
-from attendance import save_attendance, get_user_session
+from attendance import save_attendance
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import os
 
 MENU = [
@@ -25,116 +26,85 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    user = update.effective_user.username or update.effective_user.first_name
+    # Get user's actual Telegram name
+    user = update.effective_user.full_name
+
     action = update.message.text
 
-    now = datetime.now(ZoneInfo("Asia/Kolkata"))
-    session = get_user_session(user)
+    # Pakistan Time
+    now = datetime.now(ZoneInfo("Asia/Karachi"))
+
+    time_now = now.strftime("%I:%M %p")
+    date_now = now.strftime("%Y-%m-%d")
 
     save_attendance(
         user,
         action,
-        now.strftime("%H:%M:%S"),
-        now.strftime("%Y-%m-%d")
+        time_now,
+        date_now
     )
 
     # START WORK
     if action == "🟢 Start Work":
-
-        if session["start_work"] is not None:
-            await update.message.reply_text(
-                f"⚠️ Work already started at {session['start_work'].strftime('%I:%M %p')}"
-            )
-            return
-
-        session["start_work"] = now
-
-        await update.message.reply_text(
-            f"🟢 Work Started\n\nStart Time: {now.strftime('%I:%M %p')}"
+        msg = (
+            f"🟢 {user} started work\n"
+            f"⏰ Start Time: {time_now}"
         )
 
-    # BREAK START
-    elif action in ["🚬 SMK Break", "🚻 WC Break", "🍽 Lunch Break", "🍛 Dinner Break"]:
+    # SMK BREAK
+    elif action == "🚬 SMK Break":
+        msg = (
+            f"🚬 {user} went for SMK Break\n"
+            f"⏰ Out Time: {time_now}"
+        )
 
-        session["break_start"] = now
+    # WC BREAK
+    elif action == "🚻 WC Break":
+        msg = (
+            f"🚻 {user} went for WC Break\n"
+            f"⏰ Out Time: {time_now}"
+        )
 
-        await update.message.reply_text(
-            f"{action}\n\nStarted: {now.strftime('%I:%M %p')}"
+    # LUNCH BREAK
+    elif action == "🍽 Lunch Break":
+        msg = (
+            f"🍽 {user} went for Lunch Break\n"
+            f"⏰ Out Time: {time_now}"
+        )
+
+    # DINNER BREAK
+    elif action == "🍛 Dinner Break":
+        msg = (
+            f"🍛 {user} went for Dinner Break\n"
+            f"⏰ Out Time: {time_now}"
         )
 
     # BACK TO WORK
     elif action == "🔙 Back To Work":
-
-        if session["break_start"] is None:
-            await update.message.reply_text(
-                "⚠️ No active break found."
-            )
-            return
-
-        minutes = int(
-            (now - session["break_start"]).total_seconds() / 60
-        )
-
-        session["total_break_minutes"] += minutes
-        session["break_start"] = None
-
-        await update.message.reply_text(
-            f"🔙 Back To Work\n\nBreak Duration: {minutes} min\n\nTotal Break Time Today: {session['total_break_minutes']} min"
-        )
-
-    # MY STATUS
-    elif action == "📊 My Status":
-
-        if session["start_work"] is None:
-            await update.message.reply_text(
-                "⚠️ Work not started yet."
-            )
-            return
-
-        work_minutes = int(
-            (now - session["start_work"]).total_seconds() / 60
-        )
-
-        await update.message.reply_text(
-            f"📊 Today's Status\n\n"
-            f"Start Work: {session['start_work'].strftime('%I:%M %p')}\n"
-            f"Total Work Time: {work_minutes} min\n"
-            f"Total Break Time: {session['total_break_minutes']} min"
+        msg = (
+            f"🔙 {user} returned to work\n"
+            f"⏰ In Time: {time_now}"
         )
 
     # OFF WORK
     elif action == "🔴 Off Work":
-
-        if session["start_work"] is None:
-            await update.message.reply_text(
-                "⚠️ Work not started today."
-            )
-            return
-
-        total_minutes = int(
-            (now - session["start_work"]).total_seconds() / 60
+        msg = (
+            f"🔴 {user} finished work\n"
+            f"⏰ Off Time: {time_now}"
         )
 
-        working_minutes = total_minutes - session["total_break_minutes"]
-
-        await update.message.reply_text(
-            f"📋 Daily Report\n\n"
-            f"Start Work: {session['start_work'].strftime('%I:%M %p')}\n"
-            f"Off Work: {now.strftime('%I:%M %p')}\n\n"
-            f"Total Shift: {total_minutes} min\n"
-            f"Total Break: {session['total_break_minutes']} min\n"
-            f"Actual Working Time: {working_minutes} min"
+    # STATUS
+    elif action == "📊 My Status":
+        msg = (
+            f"📊 Employee Status\n"
+            f"👤 {user}\n"
+            f"⏰ Current Time: {time_now}"
         )
-
-        session["start_work"] = None
-        session["break_start"] = None
-        session["total_break_minutes"] = 0
 
     else:
+        msg = f"{user}: {action}"
 
-        await update.message.reply_text(
-            f"✅ @{user} clicked: {action}"
-        )
+    await update.message.reply_text(msg)
 
 
 def main():
