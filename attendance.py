@@ -13,7 +13,9 @@ CREDS = Credentials.from_service_account_file(
 
 client = gspread.authorize(CREDS)
 
-sheet = client.open("Panda Attendance").sheet1
+# IMPORTANT: This must match your Google Sheet name exactly
+sheet = client.open("Panda Attendance Sheet").sheet1
+
 
 def save_attendance(username, action, time_now, date_now):
     sheet.append_row([
