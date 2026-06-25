@@ -1,7 +1,18 @@
 from telegram import ReplyKeyboardMarkup, Update
-from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters
+)
 
-from attendance import save_attendance
+from attendance import (
+    add_record,
+    get_start_work_time,
+    get_last_open_break,
+    get_break_totals
+)
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -15,8 +26,19 @@ MENU = [
 ]
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = ReplyKeyboardMarkup(MENU, resize_keyboard=True)
+def now_time():
+    return datetime.now(
+        ZoneInfo("Asia/Karachi")
+    )
+
+
+async def start(update: Update,
+                context: ContextTypes.DEFAULT_TYPE):
+
+    keyboard = ReplyKeyboardMarkup(
+        MENU,
+        resize_keyboard=True
+    )
 
     await update.message.reply_text(
         "Welcome to Panda Attendance System",
@@ -24,81 +46,279 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def buttons(update: Update,
+                  context: ContextTypes.DEFAULT_TYPE):
 
-    # Get user's actual Telegram name
     user = update.effective_user.full_name
 
     action = update.message.text
 
-    # Pakistan Time
-    now = datetime.now(ZoneInfo("Asia/Karachi"))
+    now = now_time()
 
     time_now = now.strftime("%I:%M %p")
     date_now = now.strftime("%Y-%m-%d")
 
-    save_attendance(
-        user,
-        action,
-        time_now,
-        date_now
-    )
-
     # START WORK
     if action == "🟢 Start Work":
-        msg = (
-            f"🟢 {user} started work\n"
-            f"⏰ Start Time: {time_now}"
+
+        existing = get_start_work_time(
+            user,
+            date_now
         )
+
+        if existing:
+            msg = (
+                f"⚠️ {user}\n\n"
+                f"You already started work today.\n"
+                f"Start Time: {existing}"
+            )
+
+        else:
+
+            add_record(
+                date_now,
+                user,
+                "Start Work",
+                time_now
+            )
+
+            msg = (
+                f"🟢 {user} started work\n\n"
+                f"⏰ Start Time: {time_now}"
+            )
 
     # SMK BREAK
     elif action == "🚬 SMK Break":
+
+        add_record(
+            date_now,
+            user,
+            "Break Start",
+            time_now,
+            "SMK"
+        )
+
+        totals = get_break_totals(
+            user,
+            date_now
+        )
+
+        remaining = max(
+            0,
+            50 - totals["smk_wc"]
+        )
+
         msg = (
-            f"🚬 {user} went for SMK Break\n"
-            f"⏰ Out Time: {time_now}"
+            f"🚬 {user} started SMK Break\n\n"
+            f"⏰ Out Time: {time_now}\n\n"
+            f"Remaining SMK/WC Time:\n"
+            f"{remaining} Minutes"
         )
 
     # WC BREAK
     elif action == "🚻 WC Break":
+
+        add_record(
+            date_now,
+            user,
+            "Break Start",
+            time_now,
+            "WC"
+        )
+
+        totals = get_break_totals(
+            user,
+            date_now
+        )
+
+        remaining = max(
+            0,
+            50 - totals["smk_wc"]
+        )
+
         msg = (
-            f"🚻 {user} went for WC Break\n"
-            f"⏰ Out Time: {time_now}"
+            f"🚻 {user} started WC Break\n\n"
+            f"⏰ Out Time: {time_now}\n\n"
+            f"Remaining SMK/WC Time:\n"
+            f"{remaining} Minutes"
         )
 
     # LUNCH BREAK
     elif action == "🍽 Lunch Break":
+
+        add_record(
+            date_now,
+            user,
+            "Break Start",
+            time_now,
+            "Lunch"
+        )
+
+        totals = get_break_totals(
+            user,
+            date_now
+        )
+
+        remaining = max(
+            0,
+            90 - totals["lunch"]
+        )
+
         msg = (
-            f"🍽 {user} went for Lunch Break\n"
-            f"⏰ Out Time: {time_now}"
+            f"🍽 {user} started Lunch Break\n\n"
+            f"⏰ Out Time: {time_now}\n\n"
+            f"Remaining Lunch Time:\n"
+            f"{remaining} Minutes"
         )
 
     # DINNER BREAK
     elif action == "🍛 Dinner Break":
+
+        add_record(
+            date_now,
+            user,
+            "Break Start",
+            time_now,
+            "Dinner"
+        )
+
+        totals = get_break_totals(
+            user,
+            date_now
+        )
+
+        remaining = max(
+            0,
+            30 - totals["dinner"]
+        )
+
         msg = (
-            f"🍛 {user} went for Dinner Break\n"
-            f"⏰ Out Time: {time_now}"
+            f"🍛 {user} started Dinner Break\n\n"
+            f"⏰ Out Time: {time_now}\n\n"
+            f"Remaining Dinner Time:\n"
+            f"{remaining} Minutes"
         )
 
     # BACK TO WORK
     elif action == "🔙 Back To Work":
+
+        break_type = get_last_open_break(
+            user,
+            date_now
+        )
+
+        if not break_type:
+
+            msg = (
+                f"⚠️ {user}\n\n"
+                f"No active break found."
+            )
+
+        else:
+
+            add_record(
+                date_now,
+                user,
+                "Break End",
+                time_now,
+                break_type,
+                10
+            )
+
+            totals = get_break_totals(
+                user,
+                date_now
+            )
+
+            if break_type in ["SMK", "WC"]:
+
+                remaining = max(
+                    0,
+                    50 - totals["smk_wc"]
+                )
+
+                msg = (
+                    f"🔙 {user} returned to work\n\n"
+                    f"Break Type: {break_type}\n"
+                    f"Break Used: 10 Minutes\n\n"
+                    f"Remaining:\n"
+                    f"{remaining} Minutes"
+                )
+
+            elif break_type == "Lunch":
+
+                remaining = max(
+                    0,
+                    90 - totals["lunch"]
+                )
+
+                msg = (
+                    f"🔙 {user} returned to work\n\n"
+                    f"Break Type: Lunch\n"
+                    f"Break Used: 10 Minutes\n\n"
+                    f"Remaining:\n"
+                    f"{remaining} Minutes"
+                )
+
+            else:
+
+                remaining = max(
+                    0,
+                    30 - totals["dinner"]
+                )
+
+                msg = (
+                    f"🔙 {user} returned to work\n\n"
+                    f"Break Type: Dinner\n"
+                    f"Break Used: 10 Minutes\n\n"
+                    f"Remaining:\n"
+                    f"{remaining} Minutes"
+                )
+
+    # STATUS
+    elif action == "📊 My Status":
+
+        totals = get_break_totals(
+            user,
+            date_now
+        )
+
         msg = (
-            f"🔙 {user} returned to work\n"
-            f"⏰ In Time: {time_now}"
+            f"📊 Employee Status\n\n"
+            f"👤 {user}\n\n"
+            f"🚬 + 🚻 Used: "
+            f"{totals['smk_wc']}/50 Minutes\n"
+            f"🍽 Lunch Used: "
+            f"{totals['lunch']}/90 Minutes\n"
+            f"🍛 Dinner Used: "
+            f"{totals['dinner']}/30 Minutes"
         )
 
     # OFF WORK
     elif action == "🔴 Off Work":
-        msg = (
-            f"🔴 {user} finished work\n"
-            f"⏰ Off Time: {time_now}"
+
+        totals = get_break_totals(
+            user,
+            date_now
         )
 
-    # STATUS
-    elif action == "📊 My Status":
+        add_record(
+            date_now,
+            user,
+            "Off Work",
+            time_now
+        )
+
         msg = (
-            f"📊 Employee Status\n"
-            f"👤 {user}\n"
-            f"⏰ Current Time: {time_now}"
+            f"🔴 {user} finished work\n\n"
+            f"⏰ Off Time: {time_now}\n\n"
+            f"📋 Daily Report\n\n"
+            f"🚬 + 🚻 Used: "
+            f"{totals['smk_wc']}/50 Minutes\n"
+            f"🍽 Lunch Used: "
+            f"{totals['lunch']}/90 Minutes\n"
+            f"🍛 Dinner Used: "
+            f"{totals['dinner']}/30 Minutes"
         )
 
     else:
@@ -113,10 +333,15 @@ def main():
 
     app = Application.builder().token(token).build()
 
-    app.add_handler(CommandHandler("start", start))
+    app.add_handler(
+        CommandHandler("start", start)
+    )
 
     app.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, buttons)
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            buttons
+        )
     )
 
     app.run_polling()
