@@ -28,7 +28,7 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user.username or update.effective_user.first_name
     action = update.message.text
 
-    now = datetime.now()
+    now = datetime.now(ZoneInfo("Asia/Kolkata"))
     session = get_user_session(user)
 
     save_attendance(
