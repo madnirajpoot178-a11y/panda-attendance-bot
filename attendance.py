@@ -27,7 +27,9 @@ def add_record(
     action,
     time_now,
     break_type="",
-    minutes=""
+    minutes="",
+    late_minutes="",
+    penalty=""
 ):
     sheet.append_row([
         date_now,
@@ -35,7 +37,9 @@ def add_record(
         action,
         time_now,
         break_type,
-        minutes
+        minutes,
+        late_minutes,
+        penalty
     ])
 
 
@@ -155,3 +159,36 @@ def get_break_totals(username, date_now):
         "lunch": lunch,
         "dinner": dinner
     }
+from settings import (
+    office_start,
+    late_fine_per_minute
+)
+
+from datetime import datetime
+
+
+def calculate_late(time_now):
+
+    office = datetime.strptime(
+        office_start(),
+        "%H:%M"
+    )
+
+    current = datetime.strptime(
+        time_now,
+        "%I:%M %p"
+    )
+
+    late = int(
+        (current - office).total_seconds() / 60
+    )
+
+    if late < 0:
+        late = 0
+
+    return late
+
+
+def calculate_late_penalty(late_minutes):
+
+    return late_minutes * late_fine_per_minute()
