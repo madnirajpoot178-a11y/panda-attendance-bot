@@ -10,6 +10,7 @@ from telegram.ext import (
 from attendance import (
     add_record,
     get_start_work_time,
+    get_last_open_break,
     get_last_open_break_info,
     get_break_totals,
     calculate_late,
@@ -124,121 +125,177 @@ async def buttons(
     # -----------------------------
     # SMK BREAK
     # -----------------------------
-    elif action == "🚬 SMK Break":
+        elif action == "🚬 SMK Break":
 
-        add_record(
-            date_now,
-            user,
-            "Break Start",
-            time_now,
-            "SMK"
-        )
-
-        totals = get_break_totals(
+        active_break = get_last_open_break(
             user,
             date_now
         )
 
-        remaining = max(
-            0,
-            50 - totals["smk_wc"]
-        )
+        if active_break:
 
-        msg = (
-            f"🚬 {user} started SMK Break\n\n"
-            f"⏰ Out Time: {time_now}\n\n"
-            f"Remaining SMK/WC Time:\n"
-            f"{remaining} Minutes"
-        )
+            msg = (
+                f"⚠️ You are already on {active_break} Break.\n\n"
+                f"Please press 🔙 Back To Work first."
+            )
+
+        else:
+
+            add_record(
+                date_now,
+                user,
+                "Break Start",
+                time_now,
+                "SMK"
+            )
+
+            totals = get_break_totals(
+                user,
+                date_now
+            )
+
+            remaining = max(
+                0,
+                50 - totals["smk_wc"]
+            )
+
+            msg = (
+                f"🚬 {user} started SMK Break\n\n"
+                f"⏰ Out Time: {time_now}\n\n"
+                f"Remaining SMK/WC Time:\n"
+                f"{remaining} Minutes"
+            )
 
     # -----------------------------
     # WC BREAK
     # -----------------------------
-    elif action == "🚻 WC Break":
+        elif action == "🚻 WC Break":
 
-        add_record(
-            date_now,
-            user,
-            "Break Start",
-            time_now,
-            "WC"
-        )
-
-        totals = get_break_totals(
+        active_break = get_last_open_break(
             user,
             date_now
         )
 
-        remaining = max(
-            0,
-            50 - totals["smk_wc"]
-        )
+        if active_break:
 
-        msg = (
-            f"🚻 {user} started WC Break\n\n"
-            f"⏰ Out Time: {time_now}\n\n"
-            f"Remaining SMK/WC Time:\n"
-            f"{remaining} Minutes"
-        )
+            msg = (
+                f"⚠️ You are already on {active_break} Break.\n\n"
+                f"Please press 🔙 Back To Work first."
+            )
+
+        else:
+
+            add_record(
+                date_now,
+                user,
+                "Break Start",
+                time_now,
+                "WC"
+            )
+
+            totals = get_break_totals(
+                user,
+                date_now
+            )
+
+            remaining = max(
+                0,
+                50 - totals["smk_wc"]
+            )
+
+            msg = (
+                f"🚻 {user} started WC Break\n\n"
+                f"⏰ Out Time: {time_now}\n\n"
+                f"Remaining SMK/WC Time:\n"
+                f"{remaining} Minutes"
+            )
           # -----------------------------
     # LUNCH BREAK
     # -----------------------------
-    elif action == "🍽 Lunch Break":
+        elif action == "🍽 Lunch Break":
 
-        add_record(
-            date_now,
-            user,
-            "Break Start",
-            time_now,
-            "Lunch"
-        )
-
-        totals = get_break_totals(
+        active_break = get_last_open_break(
             user,
             date_now
         )
 
-        remaining = max(
-            0,
-            90 - totals["lunch"]
-        )
+        if active_break:
 
-        msg = (
-            f"🍽 {user} started Lunch Break\n\n"
-            f"⏰ Out Time: {time_now}\n\n"
-            f"Remaining Lunch Time:\n"
-            f"{remaining} Minutes"
-        )
+            msg = (
+                f"⚠️ You are already on {active_break} Break.\n\n"
+                f"Please press 🔙 Back To Work first."
+            )
+
+        else:
+
+            add_record(
+                date_now,
+                user,
+                "Break Start",
+                time_now,
+                "Lunch"
+            )
+
+            totals = get_break_totals(
+                user,
+                date_now
+            )
+
+            remaining = max(
+                0,
+                90 - totals["lunch"]
+            )
+
+            msg = (
+                f"🍽 {user} started Lunch Break\n\n"
+                f"⏰ Out Time: {time_now}\n\n"
+                f"Remaining Lunch Time:\n"
+                f"{remaining} Minutes"
+            )
 
     # -----------------------------
     # DINNER BREAK
     # -----------------------------
-    elif action == "🍛 Dinner Break":
+        elif action == "🍛 Dinner Break":
 
-        add_record(
-            date_now,
-            user,
-            "Break Start",
-            time_now,
-            "Dinner"
-        )
-
-        totals = get_break_totals(
+        active_break = get_last_open_break(
             user,
             date_now
         )
 
-        remaining = max(
-            0,
-            30 - totals["dinner"]
-        )
+        if active_break:
 
-        msg = (
-            f"🍛 {user} started Dinner Break\n\n"
-            f"⏰ Out Time: {time_now}\n\n"
-            f"Remaining Dinner Time:\n"
-            f"{remaining} Minutes"
-        )
+            msg = (
+                f"⚠️ You are already on {active_break} Break.\n\n"
+                f"Please press 🔙 Back To Work first."
+            )
+
+        else:
+
+            add_record(
+                date_now,
+                user,
+                "Break Start",
+                time_now,
+                "Dinner"
+            )
+
+            totals = get_break_totals(
+                user,
+                date_now
+            )
+
+            remaining = max(
+                0,
+                30 - totals["dinner"]
+            )
+
+            msg = (
+                f"🍛 {user} started Dinner Break\n\n"
+                f"⏰ Out Time: {time_now}\n\n"
+                f"Remaining Dinner Time:\n"
+                f"{remaining} Minutes"
+            )
 
     # -----------------------------
     # BACK TO WORK
