@@ -77,42 +77,42 @@ async def buttons(update: Update,
 
         else:
 
-    late_minutes = calculate_late(
-        time_now
-    )
-
-    penalty = calculate_late_penalty(
-        late_minutes
-    )
-
-    add_record(
-        date_now,
-        user,
-        "Start Work",
-        time_now,
-        "",
-        "",
-        late_minutes,
-        penalty
-    )
-
-    if late_minutes == 0:
-
-        msg = (
-            f"🟢 {user} started work\n\n"
-            f"⏰ Start Time: {time_now}\n\n"
-            f"✅ On Time"
+        late_minutes = calculate_late(
+            time_now
         )
 
-    else:
-
-        msg = (
-            f"🚨 LATE ENTRY\n\n"
-            f"👤 {user}\n\n"
-            f"⏰ Start Time: {time_now}\n\n"
-            f"⌛ Late: {late_minutes} Minutes\n"
-            f"💸 Fine: Rs. {penalty}"
+        penalty = calculate_late_penalty(
+            late_minutes
         )
+
+        add_record(
+            date_now,
+            user,
+            "Start Work",
+            time_now,
+            "",
+            "",
+            late_minutes,
+            penalty
+        )
+
+        if late_minutes == 0:
+
+            msg = (
+                f"🟢 {user} started work\n\n"
+                f"⏰ Start Time: {time_now}\n\n"
+                f"✅ On Time"
+            )
+
+        else:
+
+            msg = (
+                f"🚨 LATE ENTRY\n\n"
+                f"👤 {user}\n\n"
+                f"⏰ Start Time: {time_now}\n\n"
+                f"⌛ Late: {late_minutes} Minutes\n"
+                f"💸 Fine: Rs. {penalty}"
+            )
 
     # SMK BREAK
     elif action == "🚬 SMK Break":
