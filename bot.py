@@ -11,7 +11,9 @@ from attendance import (
     add_record,
     get_start_work_time,
     get_last_open_break_info,
-    get_break_totals
+    get_break_totals,
+    calculate_late,
+    calculate_late_penalty
 )
 
 from datetime import datetime
