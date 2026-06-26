@@ -11,7 +11,9 @@ from attendance import (
     add_record,
     get_start_work_time,
     get_last_open_break_info,
-    get_break_totals
+    get_break_totals,
+    calculate_late,
+    calculate_late_penalty
 )
 
 from datetime import datetime
@@ -75,17 +77,40 @@ async def buttons(update: Update,
 
         else:
 
-            add_record(
-                date_now,
-                user,
-                "Start Work",
-                time_now
-            )
+            late_minutes = calculate_late(time_now)
 
-            msg = (
-                f"🟢 {user} started work\n\n"
-                f"⏰ Start Time: {time_now}"
-            )
+penalty = calculate_late_penalty(
+    late_minutes
+)
+
+add_record(
+    date_now,
+    user,
+    "Start Work",
+    time_now,
+    "",
+    "",
+    late_minutes,
+    penalty
+)
+
+if late_minutes == 0:
+
+    msg = (
+        f"🟢 {user} started work\n\n"
+        f"⏰ Start Time: {time_now}\n\n"
+        f"✅ On Time"
+    )
+
+else:
+
+    msg = (
+        f"🚨 LATE ENTRY\n\n"
+        f"👤 {user}\n\n"
+        f"⏰ Start Time: {time_now}\n\n"
+        f"⌛ Late: {late_minutes} Minutes\n"
+        f"💸 Fine: Rs. {penalty}"
+    )
 
     # SMK BREAK
     elif action == "🚬 SMK Break":
