@@ -21,10 +21,10 @@ from zoneinfo import ZoneInfo
 import os
 
 MENU = [
-    ["🟢 Start Work", "🚬 SMK Break"],
-    ["🚻 WC Break", "🍽 Lunch Break"],
-    ["🍛 Dinner Break", "🔙 Back To Work"],
-    ["🔴 Off Work", "📊 My Status"]
+    ["ðŸŸ¢ Start Work", "ðŸš¬ SMK Break"],
+    ["ðŸš» WC Break", "ðŸ½ Lunch Break"],
+    ["ðŸ› Dinner Break", "ðŸ”™ Back To Work"],
+    ["ðŸ”´ Off Work", "ðŸ“Š My Status"]
 ]
 
 
@@ -61,7 +61,7 @@ async def buttons(update: Update,
     date_now = now.strftime("%Y-%m-%d")
 
     # START WORK
-    if action == "🟢 Start Work":
+    if action == "ðŸŸ¢ Start Work":
 
         existing = get_start_work_time(
             user,
@@ -70,7 +70,7 @@ async def buttons(update: Update,
 
         if existing:
             msg = (
-                f"⚠️ {user}\n\n"
+                f"âš ï¸ {user}\n\n"
                 f"You already started work today.\n"
                 f"Start Time: {existing}"
             )
@@ -99,23 +99,23 @@ async def buttons(update: Update,
     if late_minutes == 0:
 
         msg = (
-            f"🟢 {user} started work\n\n"
-            f"⏰ Start Time: {time_now}\n\n"
-            f"✅ On Time"
+            f"ðŸŸ¢ {user} started work\n\n"
+            f"â° Start Time: {time_now}\n\n"
+            f"âœ… On Time"
         )
 
     else:
 
         msg = (
-            f"🚨 LATE ENTRY\n\n"
-            f"👤 {user}\n\n"
-            f"⏰ Start Time: {time_now}\n\n"
-            f"⌛ Late: {late_minutes} Minutes\n"
-            f"💸 Fine: Rs. {penalty}"
+            f"ðŸš¨ LATE ENTRY\n\n"
+            f"ðŸ‘¤ {user}\n\n"
+            f"â° Start Time: {time_now}\n\n"
+            f"âŒ› Late: {late_minutes} Minutes\n"
+            f"ðŸ’¸ Fine: Rs. {penalty}"
         )
 
     # SMK BREAK
-    elif action == "🚬 SMK Break":
+    elif action == "ðŸš¬ SMK Break":
 
         add_record(
             date_now,
@@ -136,14 +136,14 @@ async def buttons(update: Update,
         )
 
         msg = (
-            f"🚬 {user} started SMK Break\n\n"
-            f"⏰ Out Time: {time_now}\n\n"
+            f"ðŸš¬ {user} started SMK Break\n\n"
+            f"â° Out Time: {time_now}\n\n"
             f"Remaining SMK/WC Time:\n"
             f"{remaining} Minutes"
         )
 
     # WC BREAK
-    elif action == "🚻 WC Break":
+    elif action == "ðŸš» WC Break":
 
         add_record(
             date_now,
@@ -164,14 +164,14 @@ async def buttons(update: Update,
         )
 
         msg = (
-            f"🚻 {user} started WC Break\n\n"
-            f"⏰ Out Time: {time_now}\n\n"
+            f"ðŸš» {user} started WC Break\n\n"
+            f"â° Out Time: {time_now}\n\n"
             f"Remaining SMK/WC Time:\n"
             f"{remaining} Minutes"
         )
 
     # LUNCH BREAK
-    elif action == "🍽 Lunch Break":
+    elif action == "ðŸ½ Lunch Break":
 
         add_record(
             date_now,
@@ -192,14 +192,14 @@ async def buttons(update: Update,
         )
 
         msg = (
-            f"🍽 {user} started Lunch Break\n\n"
-            f"⏰ Out Time: {time_now}\n\n"
+            f"ðŸ½ {user} started Lunch Break\n\n"
+            f"â° Out Time: {time_now}\n\n"
             f"Remaining Lunch Time:\n"
             f"{remaining} Minutes"
         )
 
     # DINNER BREAK
-    elif action == "🍛 Dinner Break":
+    elif action == "ðŸ› Dinner Break":
 
         add_record(
             date_now,
@@ -220,14 +220,14 @@ async def buttons(update: Update,
         )
 
         msg = (
-            f"🍛 {user} started Dinner Break\n\n"
-            f"⏰ Out Time: {time_now}\n\n"
+            f"ðŸ› {user} started Dinner Break\n\n"
+            f"â° Out Time: {time_now}\n\n"
             f"Remaining Dinner Time:\n"
             f"{remaining} Minutes"
         )
 
     # BACK TO WORK
-    elif action == "🔙 Back To Work":
+    elif action == "ðŸ”™ Back To Work":
 
         break_type, start_time = get_last_open_break_info(
             user,
@@ -237,7 +237,7 @@ async def buttons(update: Update,
         if not break_type:
 
             msg = (
-                f"⚠️ {user}\n\n"
+                f"âš ï¸ {user}\n\n"
                 f"No active break found."
             )
 
@@ -296,7 +296,7 @@ async def buttons(update: Update,
                 )
 
             msg = (
-                f"🔙 {user} returned to work\n\n"
+                f"ðŸ”™ {user} returned to work\n\n"
                 f"Break Type: {break_type}\n"
                 f"Break Used: {minutes_used} Minutes\n\n"
                 f"Remaining:\n"
@@ -304,7 +304,7 @@ async def buttons(update: Update,
             )
 
     # STATUS
-    elif action == "📊 My Status":
+    elif action == "ðŸ“Š My Status":
 
         totals = get_break_totals(
             user,
@@ -312,18 +312,18 @@ async def buttons(update: Update,
         )
 
         msg = (
-            f"📊 Employee Status\n\n"
-            f"👤 {user}\n\n"
-            f"🚬 + 🚻 Used: {totals['smk_wc']}/50 Minutes\n"
-            f"🍽 Lunch Used: {totals['lunch']}/90 Minutes\n"
-            f"🍛 Dinner Used: {totals['dinner']}/30 Minutes\n\n"
-            f"🚬 + 🚻 Remaining: {max(0, 50 - totals['smk_wc'])} Minutes\n"
-            f"🍽 Remaining: {max(0, 90 - totals['lunch'])} Minutes\n"
-            f"🍛 Remaining: {max(0, 30 - totals['dinner'])} Minutes"
+            f"ðŸ“Š Employee Status\n\n"
+            f"ðŸ‘¤ {user}\n\n"
+            f"ðŸš¬ + ðŸš» Used: {totals['smk_wc']}/50 Minutes\n"
+            f"ðŸ½ Lunch Used: {totals['lunch']}/90 Minutes\n"
+            f"ðŸ› Dinner Used: {totals['dinner']}/30 Minutes\n\n"
+            f"ðŸš¬ + ðŸš» Remaining: {max(0, 50 - totals['smk_wc'])} Minutes\n"
+            f"ðŸ½ Remaining: {max(0, 90 - totals['lunch'])} Minutes\n"
+            f"ðŸ› Remaining: {max(0, 30 - totals['dinner'])} Minutes"
         )
 
     # OFF WORK
-    elif action == "🔴 Off Work":
+    elif action == "ðŸ”´ Off Work":
 
         totals = get_break_totals(
             user,
@@ -338,15 +338,15 @@ async def buttons(update: Update,
         )
 
         msg = (
-            f"🔴 {user} finished work\n\n"
-            f"⏰ Off Time: {time_now}\n\n"
-            f"📋 Daily Report\n\n"
-            f"🚬 + 🚻 Used: {totals['smk_wc']}/50 Minutes\n"
-            f"🍽 Lunch Used: {totals['lunch']}/90 Minutes\n"
-            f"🍛 Dinner Used: {totals['dinner']}/30 Minutes\n\n"
-            f"🚬 + 🚻 Remaining: {max(0, 50 - totals['smk_wc'])} Minutes\n"
-            f"🍽 Remaining: {max(0, 90 - totals['lunch'])} Minutes\n"
-            f"🍛 Remaining: {max(0, 30 - totals['dinner'])} Minutes"
+            f"ðŸ”´ {user} finished work\n\n"
+            f"â° Off Time: {time_now}\n\n"
+            f"ðŸ“‹ Daily Report\n\n"
+            f"ðŸš¬ + ðŸš» Used: {totals['smk_wc']}/50 Minutes\n"
+            f"ðŸ½ Lunch Used: {totals['lunch']}/90 Minutes\n"
+            f"ðŸ› Dinner Used: {totals['dinner']}/30 Minutes\n\n"
+            f"ðŸš¬ + ðŸš» Remaining: {max(0, 50 - totals['smk_wc'])} Minutes\n"
+            f"ðŸ½ Remaining: {max(0, 90 - totals['lunch'])} Minutes\n"
+            f"ðŸ› Remaining: {max(0, 30 - totals['dinner'])} Minutes"
         )
 
     else:
