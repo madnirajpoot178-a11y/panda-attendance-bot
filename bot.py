@@ -125,7 +125,7 @@ async def buttons(
     # -----------------------------
     # SMK BREAK
     # -----------------------------
-        elif action == "🚬 SMK Break":
+    elif action == "🚬 SMK Break":
 
         active_break = get_last_open_break(
             user,
@@ -133,6 +133,7 @@ async def buttons(
         )
 
         if active_break:
+            ...
 
             msg = (
                 f"⚠️ You are already on {active_break} Break.\n\n"
@@ -169,7 +170,7 @@ async def buttons(
     # -----------------------------
     # WC BREAK
     # -----------------------------
-        elif action == "🚻 WC Break":
+    elif action == "🚻 WC Break":
 
         active_break = get_last_open_break(
             user,
@@ -212,7 +213,7 @@ async def buttons(
           # -----------------------------
     # LUNCH BREAK
     # -----------------------------
-        elif action == "🍽 Lunch Break":
+    elif action == "🍽 Lunch Break":
 
         active_break = get_last_open_break(
             user,
@@ -256,7 +257,7 @@ async def buttons(
     # -----------------------------
     # DINNER BREAK
     # -----------------------------
-        elif action == "🍛 Dinner Break":
+    elif action == "🍛 Dinner Break":
 
         active_break = get_last_open_break(
             user,
