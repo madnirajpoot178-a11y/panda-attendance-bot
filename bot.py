@@ -14,7 +14,8 @@ from attendance import (
     get_last_open_break_info,
     get_break_totals,
     calculate_late,
-    calculate_late_penalty
+    calculate_late_penalty,
+    get_user_today_records
 )
 
 from datetime import datetime
@@ -34,7 +35,18 @@ def now_time():
     return datetime.now(
         ZoneInfo("Asia/Karachi")
     )
+def calculate_break_penalty(totals):
 
+    extra_smk = max(0, totals["smk_wc"] - 50)
+    extra_lunch = max(0, totals["lunch"] - 90)
+    extra_dinner = max(0, totals["dinner"] - 30)
+
+    total_extra = extra_smk + extra_lunch + extra_dinner
+
+    # Fine = 1000 per extra minute
+    penalty = total_extra * 1000
+
+    return total_extra, penalty
 
 async def start(
     update: Update,
@@ -406,25 +418,45 @@ async def buttons(
             user,
             date_now
         )
+late_minutes = calculate_late(time_now)
+late_penalty = calculate_late_penalty(late_minutes)
 
+extra_break_minutes, break_penalty = calculate_break_penalty(totals)
+
+total_penalty = late_penalty + break_penalty
         add_record(
-            date_now,
-            user,
-            "Off Work",
-            time_now
-        )
+    date_now,
+    user,
+    "Off Work",
+    time_now,
+    "",
+    "",
+    late_minutes,
+    total_penalty
+)
 
         msg = (
-            f"🔴 {user} finished work\n\n"
-            f"⏰ Off Time: {time_now}\n\n"
-            f"📋 Daily Report\n\n"
-            f"🚬 + 🚻 Used: {totals['smk_wc']}/50 Minutes\n"
-            f"🍽 Lunch Used: {totals['lunch']}/90 Minutes\n"
-            f"🍛 Dinner Used: {totals['dinner']}/30 Minutes\n\n"
-            f"🚬 + 🚻 Remaining: {max(0, 50 - totals['smk_wc'])} Minutes\n"
-            f"🍽 Remaining: {max(0, 90 - totals['lunch'])} Minutes\n"
-            f"🍛 Remaining: {max(0, 30 - totals['dinner'])} Minutes"
-        )
+    f"🔴 {user} finished work\n\n"
+    f"⏰ Off Time: {time_now}\n\n"
+
+    f"📋 Daily Report\n\n"
+
+    f"🚬 + 🚻 Used: {totals['smk_wc']}/50 Minutes\n"
+    f"🍽 Lunch Used: {totals['lunch']}/90 Minutes\n"
+    f"🍛 Dinner Used: {totals['dinner']}/30 Minutes\n\n"
+
+    f"🚬 + 🚻 Remaining: {max(0, 50 - totals['smk_wc'])} Minutes\n"
+    f"🍽 Remaining: {max(0, 90 - totals['lunch'])} Minutes\n"
+    f"🍛 Remaining: {max(0, 30 - totals['dinner'])} Minutes\n\n"
+
+    f"⏰ Late Minutes: {late_minutes}\n"
+    f"💰 Late Penalty: ₹{late_penalty}\n\n"
+
+    f"🚭 Extra Break: {extra_break_minutes} Minutes\n"
+    f"💰 Break Penalty: ₹{break_penalty}\n\n"
+
+    f"💸 Total Penalty: ₹{total_penalty}"
+)
 
     else:
         msg = f"{user}: {action}"
