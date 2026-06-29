@@ -452,12 +452,12 @@ async def buttons(
             f"🍛 Remaining: {max(0, 30 - totals['dinner'])} Minutes\n\n"
 
             f"⏰ Late Minutes: {late_minutes}\n"
-            f"💰 Late Penalty: ₹{late_penalty}\n\n"
+            f"💰 Late Penalty: Rs{late_penalty}\n\n"
 
             f"🚭 Extra Break: {extra_break_minutes} Minutes\n"
-            f"💰 Break Penalty: ₹{break_penalty}\n\n"
+            f"💰 Break Penalty: Rs{break_penalty}\n\n"
 
-            f"💸 Total Penalty: ₹{total_penalty}"
+            f"💸 Total Penalty: Rs{total_penalty}"
         )
 
     else:
