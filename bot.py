@@ -419,8 +419,8 @@ async def buttons(
             date_now
         )
 
-        late_minutes = calculate_late(time_now)
-        late_penalty = calculate_late_penalty(late_minutes)
+        late_minutes = 0
+        late_penalty = 0
 
         extra_break_minutes, break_penalty = calculate_break_penalty(totals)
 
